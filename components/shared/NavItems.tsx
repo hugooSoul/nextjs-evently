@@ -28,4 +28,4 @@ const NavItems = () => {
   )
 }
 
-export default NavItems
+export default NavItems;

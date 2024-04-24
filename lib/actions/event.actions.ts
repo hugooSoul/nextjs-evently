@@ -1,12 +1,12 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from 'next/cache';
 
-import { connectToDatabase } from '@/lib/database'
-import Event from '@/lib/database/models/event.model'
-import User from '@/lib/database/models/user.model'
-import Category from '@/lib/database/models/category.model'
-import { handleError } from '@/lib/utils'
+import { connectToDatabase } from '@/lib/database';
+import Event from '@/lib/database/models/event.model';
+import User from '@/lib/database/models/user.model';
+import Category from '@/lib/database/models/category.model';
+import { handleError } from '@/lib/utils';
 
 import {
   CreateEventParams,
@@ -15,10 +15,10 @@ import {
   GetAllEventsParams,
   GetEventsByUserParams,
   GetRelatedEventsByCategoryParams,
-} from '@/types'
+} from '@/types';
 
 const getCategoryByName = async (name: string) => {
-  return Category.findOne({ name: { $regex: name, $options: 'i' } })
+  return Category.findOne({ name: { $regex: name, $options: 'i' } });
 }
 
 const populateEvent = (query: any) => {
@@ -32,41 +32,41 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase()
 
-    const organizer = await User.findById(userId)
-    if (!organizer) throw new Error('Organizer not found')
+    const organizer = await User.findById(userId);
+    if (!organizer) throw new Error('Organizer not found');
 
-    const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId })
-    revalidatePath(path)
+    const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId });
+    revalidatePath(path);
 
-    return JSON.parse(JSON.stringify(newEvent))
+    return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
 // GET ONE EVENT BY ID
 export async function getEventById(eventId: string) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const event = await populateEvent(Event.findById(eventId))
+    const event = await populateEvent(Event.findById(eventId));
 
-    if (!event) throw new Error('Event not found')
+    if (!event) throw new Error('Event not found');
 
-    return JSON.parse(JSON.stringify(event))
+    return JSON.parse(JSON.stringify(event));
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
 // UPDATE
 export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const eventToUpdate = await Event.findById(event._id)
+    const eventToUpdate = await Event.findById(event._id);
     if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
-      throw new Error('Unauthorized or event not found')
+      throw new Error('Unauthorized or event not found');
     }
 
     const updatedEvent = await Event.findByIdAndUpdate(
@@ -76,28 +76,28 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     )
     revalidatePath(path)
 
-    return JSON.parse(JSON.stringify(updatedEvent))
+    return JSON.parse(JSON.stringify(updatedEvent));
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
 // DELETE
 export async function deleteEvent({ eventId, path }: DeleteEventParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const deletedEvent = await Event.findByIdAndDelete(eventId)
+    const deletedEvent = await Event.findByIdAndDelete(eventId);
     if (deletedEvent) revalidatePath(path)
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
 // GET ALL EVENTS
 export async function getAllEvents({ query, limit = 6, page, category }: GetAllEventsParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
     const titleCondition = query ? { title: { $regex: query, $options: 'i' } } : {}
     const categoryCondition = category ? await getCategoryByName(category) : null
@@ -119,7 +119,7 @@ export async function getAllEvents({ query, limit = 6, page, category }: GetAllE
       totalPages: Math.ceil(eventsCount / limit),
     }
   } catch (error) {
-    handleError(error)
+    handleError(error);
   }
 }
 
